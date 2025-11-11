@@ -65,17 +65,18 @@ function CameraCapture({ onComplete }: CameraCaptureProps) {
     const video = videoRef.current;
     const canvas = canvasRef.current;
 
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
+    const videoWidth = video.videoWidth;
+    const videoHeight = video.videoHeight;
+
+    canvas.width = videoHeight;
+    canvas.height = videoWidth;
 
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    ctx.save();
-    ctx.translate(canvas.width / 2, canvas.height / 2);
-    ctx.rotate(90 * Math.PI / 180);
-    ctx.drawImage(video, -canvas.height / 2, -canvas.width / 2, canvas.height, canvas.width);
-    ctx.restore();
+    ctx.translate(videoHeight / 2, videoWidth / 2);
+    ctx.rotate(Math.PI / 2);
+    ctx.drawImage(video, -videoWidth / 2, -videoHeight / 2, videoWidth, videoHeight);
 
     const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
 
@@ -96,23 +97,15 @@ function CameraCapture({ onComplete }: CameraCaptureProps) {
   };
 
   return (
-    <div className="min-h-screen bg-black flex flex-col">
+    <div className="min-h-screen bg-black relative flex flex-col">
       <div className="relative flex-1 flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 flex items-center justify-center">
-          <video
-            ref={videoRef}
-            autoPlay
-            playsInline
-            muted
-            className="h-full w-auto object-cover"
-            style={{
-              transform: 'rotate(90deg)',
-              transformOrigin: 'center center',
-              width: '100vh',
-              height: '100vw',
-            }}
-          />
-        </div>
+        <video
+          ref={videoRef}
+          autoPlay
+          playsInline
+          muted
+          className="w-full h-full object-cover"
+        />
 
         <div className="absolute inset-0 pointer-events-none">
           <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
@@ -120,10 +113,10 @@ function CameraCapture({ onComplete }: CameraCaptureProps) {
               <mask id="frame-mask">
                 <rect width="100" height="100" fill="white" />
                 <rect
-                  x={currentSide.isVertical ? "15" : "10"}
-                  y={currentSide.isVertical ? "25" : "30"}
-                  width={currentSide.isVertical ? "70" : "80"}
-                  height={currentSide.isVertical ? "50" : "40"}
+                  x={currentSide.isVertical ? "20" : "5"}
+                  y={currentSide.isVertical ? "20" : "15"}
+                  width={currentSide.isVertical ? "60" : "90"}
+                  height={currentSide.isVertical ? "60" : "70"}
                   fill="black"
                   rx="2"
                 />
@@ -136,10 +129,10 @@ function CameraCapture({ onComplete }: CameraCaptureProps) {
               mask="url(#frame-mask)"
             />
             <rect
-              x={currentSide.isVertical ? "15" : "10"}
-              y={currentSide.isVertical ? "25" : "30"}
-              width={currentSide.isVertical ? "70" : "80"}
-              height={currentSide.isVertical ? "50" : "40"}
+              x={currentSide.isVertical ? "20" : "5"}
+              y={currentSide.isVertical ? "20" : "15"}
+              width={currentSide.isVertical ? "60" : "90"}
+              height={currentSide.isVertical ? "60" : "70"}
               fill="none"
               stroke="#3B82F6"
               strokeWidth="0.5"
@@ -156,7 +149,7 @@ function CameraCapture({ onComplete }: CameraCaptureProps) {
         <canvas ref={canvasRef} className="hidden" />
       </div>
 
-      <div className="bg-gradient-to-t from-black via-black to-transparent p-6 space-y-4">
+      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black via-black to-transparent p-6 space-y-4">
         <div className="text-center">
           <h3 className="text-white text-xl font-semibold mb-2">
             {currentSide.label}
