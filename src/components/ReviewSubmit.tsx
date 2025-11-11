@@ -1,12 +1,39 @@
-import { CheckCircle, RotateCcw } from 'lucide-react';
+import { CheckCircle, RotateCcw, XCircle, AlertCircle, Camera } from 'lucide-react';
+import { CapturedPhoto } from '../App';
 
 interface ReviewSubmitProps {
-  photos: Array<{ side: string; dataUrl: string }>;
+  photos: CapturedPhoto[];
   onSubmit: () => void;
   onRetake: () => void;
+  onRetakeSingle: (sideId: string) => void;
 }
 
-function ReviewSubmit({ photos, onSubmit, onRetake }: ReviewSubmitProps) {
+function ReviewSubmit({ photos, onSubmit, onRetake, onRetakeSingle }: ReviewSubmitProps) {
+  const getStatusBadge = (carDetected: boolean | null | undefined) => {
+    if (carDetected === null || carDetected === undefined) {
+      return (
+        <div className="flex items-center gap-2 px-3 py-1 bg-yellow-600/20 border border-yellow-500/50 rounded-full">
+          <AlertCircle className="w-4 h-4 text-yellow-400" />
+          <span className="text-yellow-400 text-xs font-medium">Unknown</span>
+        </div>
+      );
+    }
+    if (carDetected) {
+      return (
+        <div className="flex items-center gap-2 px-3 py-1 bg-green-600/20 border border-green-500/50 rounded-full">
+          <CheckCircle className="w-4 h-4 text-green-400" />
+          <span className="text-green-400 text-xs font-medium">Car Detected</span>
+        </div>
+      );
+    }
+    return (
+      <div className="flex items-center gap-2 px-3 py-1 bg-red-600/20 border border-red-500/50 rounded-full">
+        <XCircle className="w-4 h-4 text-red-400" />
+        <span className="text-red-400 text-xs font-medium">No Car Detected</span>
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 py-8 px-6">
       <div className="max-w-4xl mx-auto">
@@ -25,11 +52,23 @@ function ReviewSubmit({ photos, onSubmit, onRetake }: ReviewSubmitProps) {
         <div className="grid grid-cols-1 gap-4 mb-8">
           {photos.map((photo, index) => (
             <div
-              key={index}
+              key={photo.sideId || index}
               className="bg-gray-800 rounded-lg overflow-hidden shadow-lg"
             >
-              <div className="p-3 bg-gray-700">
+              <div className="p-3 bg-gray-700 flex items-center justify-between">
                 <h3 className="text-white font-semibold">{photo.side}</h3>
+                <div className="flex items-center gap-3">
+                  {getStatusBadge(photo.carDetected)}
+                  {photo.sideId && (
+                    <button
+                      onClick={() => onRetakeSingle(photo.sideId!)}
+                      className="flex items-center gap-2 px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded transition-colors"
+                    >
+                      <Camera className="w-3 h-3" />
+                      Retake
+                    </button>
+                  )}
+                </div>
               </div>
               <div className="relative aspect-video bg-black">
                 <img

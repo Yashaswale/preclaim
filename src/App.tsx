@@ -7,9 +7,11 @@ import ReviewSubmit from './components/ReviewSubmit';
 
 type Step = 'welcome' | 'instructions' | 'orientation' | 'camera' | 'review';
 
-interface CapturedPhoto {
+export interface CapturedPhoto {
   side: string;
   dataUrl: string;
+  carDetected?: boolean | null; // null = checking, true = detected, false = not detected
+  sideId?: string; // For identifying which side to retake
 }
 
 function App() {
@@ -29,6 +31,7 @@ function App() {
   };
 
   const handlePhotosComplete = (capturedPhotos: CapturedPhoto[]) => {
+    // CameraCapture returns all photos (existing + newly captured), so we just replace
     setPhotos(capturedPhotos);
     setStep('review');
   };
@@ -44,13 +47,19 @@ function App() {
     setStep('camera');
   };
 
+  const handleRetakeSingle = (sideId: string) => {
+    // Remove the photo with the given sideId and go back to camera
+    setPhotos((prev) => prev.filter((photo) => photo.sideId !== sideId));
+    setStep('camera');
+  };
+
   return (
     <div className="min-h-screen bg-gray-900">
       {step === 'welcome' && <WelcomeScreen onStart={handleStartAssessment} />}
       {step === 'instructions' && <InstructionSlides onComplete={handleInstructionsComplete} />}
       {step === 'orientation' && <OrientationCheck onComplete={handleOrientationComplete} />}
-      {step === 'camera' && <CameraCapture onComplete={handlePhotosComplete} />}
-      {step === 'review' && <ReviewSubmit photos={photos} onSubmit={handleSubmit} onRetake={handleRetake} />}
+      {step === 'camera' && <CameraCapture onComplete={handlePhotosComplete} existingPhotos={photos} />}
+      {step === 'review' && <ReviewSubmit photos={photos} onSubmit={handleSubmit} onRetake={handleRetake} onRetakeSingle={handleRetakeSingle} />}
     </div>
   );
 }
