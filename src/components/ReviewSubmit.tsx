@@ -1,4 +1,4 @@
-import { CheckCircle, RotateCcw, XCircle, AlertCircle, Camera } from 'lucide-react';
+import { CheckCircle, RotateCcw, XCircle, AlertCircle, Camera, Loader2 } from 'lucide-react';
 import { CapturedPhoto } from '../App';
 
 interface ReviewSubmitProps {
@@ -6,9 +6,11 @@ interface ReviewSubmitProps {
   onSubmit: () => void;
   onRetake: () => void;
   onRetakeSingle: (sideId: string) => void;
+  isSubmitting: boolean;
+  uniqueReqId: string;
 }
 
-function ReviewSubmit({ photos, onSubmit, onRetake, onRetakeSingle }: ReviewSubmitProps) {
+function ReviewSubmit({ photos, onSubmit, onRetake, onRetakeSingle, isSubmitting, uniqueReqId }: ReviewSubmitProps) {
   const getStatusBadge = (carDetected: boolean | null | undefined) => {
     if (carDetected === null || carDetected === undefined) {
       return (
@@ -49,6 +51,15 @@ function ReviewSubmit({ photos, onSubmit, onRetake, onRetakeSingle }: ReviewSubm
           </p>
         </div>
 
+        <div className="bg-gray-800 border border-gray-700 rounded-lg p-4 mb-8">
+          <p className="text-sm text-gray-300">
+            <span className="font-semibold text-white">Request ID:</span> {uniqueReqId}
+          </p>
+          <p className="text-xs text-gray-500 mt-2">
+            Keep this ID handy to track your assessment request.
+          </p>
+        </div>
+
         <div className="grid grid-cols-1 gap-4 mb-8">
           {photos.map((photo, index) => (
             <div
@@ -61,8 +72,10 @@ function ReviewSubmit({ photos, onSubmit, onRetake, onRetakeSingle }: ReviewSubm
                   {getStatusBadge(photo.carDetected)}
                   {photo.sideId && (
                     <button
+                      type="button"
                       onClick={() => onRetakeSingle(photo.sideId!)}
-                      className="flex items-center gap-2 px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded transition-colors"
+                      disabled={isSubmitting}
+                      className="flex items-center gap-2 px-3 py-1 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:text-gray-300 disabled:cursor-not-allowed text-white text-xs font-medium rounded transition-colors"
                     >
                       <Camera className="w-3 h-3" />
                       Retake
@@ -70,6 +83,19 @@ function ReviewSubmit({ photos, onSubmit, onRetake, onRetakeSingle }: ReviewSubm
                   )}
                 </div>
               </div>
+              {photo.detectionMessage && (
+                <div
+                  className={`px-3 py-2 text-xs font-medium border-t border-gray-700 ${
+                    photo.carDetected === false
+                      ? 'text-red-300'
+                      : photo.carDetected === true
+                      ? 'text-green-300'
+                      : 'text-yellow-200'
+                  }`}
+                >
+                  {photo.detectionMessage}
+                </div>
+              )}
               <div className="relative aspect-video bg-black">
                 <img
                   src={photo.dataUrl}
@@ -83,15 +109,26 @@ function ReviewSubmit({ photos, onSubmit, onRetake, onRetakeSingle }: ReviewSubm
 
         <div className="space-y-3">
           <button
+            type="button"
             onClick={onSubmit}
-            className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-4 px-8 rounded-lg shadow-lg active:scale-95 transition-all duration-200"
+            disabled={isSubmitting || photos.length === 0}
+            className="w-full bg-green-600 hover:bg-green-700 disabled:bg-green-800/60 disabled:text-gray-200 disabled:cursor-not-allowed text-white font-semibold py-4 px-8 rounded-lg shadow-lg active:scale-95 transition-all duration-200 flex items-center justify-center gap-2"
           >
-            Submit Assessment
+            {isSubmitting ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                Submitting...
+              </>
+            ) : (
+              'Submit Assessment'
+            )}
           </button>
 
           <button
+            type="button"
             onClick={onRetake}
-            className="w-full bg-gray-700 hover:bg-gray-600 text-white font-semibold py-4 px-8 rounded-lg shadow-lg active:scale-95 transition-all duration-200 flex items-center justify-center gap-2"
+            disabled={isSubmitting}
+            className="w-full bg-gray-700 hover:bg-gray-600 disabled:bg-gray-600 disabled:text-gray-300 disabled:cursor-not-allowed text-white font-semibold py-4 px-8 rounded-lg shadow-lg active:scale-95 transition-all duration-200 flex items-center justify-center gap-2"
           >
             <RotateCcw className="w-5 h-5" />
             Retake Photos
