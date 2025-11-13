@@ -12,3 +12,4 @@ export const dataURLtoBlob = (dataURL: string): Blob => {
 
   return new Blob([u8arr], { type: mime });
 };
+

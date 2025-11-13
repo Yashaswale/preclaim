@@ -24,7 +24,6 @@ function App() {
     if (typeof window === 'undefined') {
       return `req-${Date.now()}`;
     }
-
     const params = new URLSearchParams(window.location.search);
     return (
       params.get('unique_req_id') ||

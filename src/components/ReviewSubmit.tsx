@@ -96,7 +96,7 @@ function ReviewSubmit({ photos, onSubmit, onRetake, onRetakeSingle, isSubmitting
                   {photo.detectionMessage}
                 </div>
               )}
-              <div className="relative aspect-video bg-black">
+              <div className="relative aspect-video bg-black border-4 border-blue-500 rounded-lg overflow-hidden m-4">
                 <img
                   src={photo.dataUrl}
                   alt={photo.side}

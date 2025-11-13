@@ -275,18 +275,19 @@ function CameraCapture({ onComplete, existingPhotos = [] }: CameraCaptureProps) 
           return;
         }
         if (carDetected === true) {
-          showToast(message || 'Car detected in image.', 'success');
+          // showToast(message || 'Car detected in image.', 'success'); // REMOVE
         } else if (carDetected === false) {
-          showToast(message || 'No car found in image. You can continue and retake later if needed.', 'info');
+          // showToast(message || 'No car found in image. You can continue and retake later if needed.', 'info'); // REMOVE
         } else {
-          showToast(message || 'Unable to determine if a car is present.', 'info');
+          // showToast(message || 'Unable to determine if a car is present.', 'info'); // REMOVE
         }
       } catch (error) {
         console.error('Error checking car:', error);
         if (!isMountedRef.current) {
           return;
         }
-        showToast('Error checking car detection', 'error');
+        // REMOVE error toast
+        // showToast('Error checking car detection', 'error');
       }
     })();
   };
