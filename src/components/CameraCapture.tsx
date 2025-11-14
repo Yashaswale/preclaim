@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { Camera, Check } from 'lucide-react';
 import { CapturedPhoto } from '../App';
-import { useToast, ToastContainer } from './Toast';
 import { DEZZEX_API_BASE_URL, DEZZEX_API_KEY } from '../config';
 import { dataURLtoBlob } from '../utils/image';
+import carFrontImg from '../images/car_front1.png';
+import carSideImg from '../images/car_side1.png';
 
 interface CameraCaptureProps {
   onComplete: (photos: CapturedPhoto[]) => void;
@@ -20,7 +21,7 @@ const SIDES: Array<{ id: CarSide; label: string; isVertical: boolean }> = [
 ];
 
 const FRAME_CONFIG = {
-  portrait: { x: 12, y: 4, width: 76, height: 92 },
+  portrait: { x: 2, y: 14, width: 96, height: 72 },
   landscape: { x: 2, y: 14, width: 96, height: 72 },
 };
 
@@ -106,9 +107,11 @@ function CameraCapture({ onComplete, existingPhotos = [] }: CameraCaptureProps) 
   const [capturedPhotos, setCapturedPhotos] = useState<CapturedPhoto[]>(existingPhotos);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [isCapturing, setIsCapturing] = useState(false);
-  const { toasts, showToast, removeToast } = useToast();
   const isMountedRef = useRef(true);
   const capturedPhotosRef = useRef<CapturedPhoto[]>(existingPhotos);
+  const [showOverlay, setShowOverlay] = useState(true);
+
+  const overlayTimeout = useRef<NodeJS.Timeout | null>(null);
 
   const currentSide = SIDES[currentSideIndex];
   const frame = currentSide.isVertical ? FRAME_CONFIG.portrait : FRAME_CONFIG.landscape;
@@ -125,12 +128,13 @@ function CameraCapture({ onComplete, existingPhotos = [] }: CameraCaptureProps) 
   }, [capturedPhotos]);
 
   useEffect(() => {
-    if (currentSide.isVertical) {
-      showToast(`Hold your phone in portrait orientation for the ${currentSide.label.toLowerCase()}.`, 'info');
-    } else {
-      showToast(`Hold your phone in landscape orientation for the ${currentSide.label.toLowerCase()}.`, 'info');
-    }
-  }, [currentSide, showToast]);
+    setShowOverlay(true);
+    if (overlayTimeout.current) clearTimeout(overlayTimeout.current);
+    overlayTimeout.current = setTimeout(() => setShowOverlay(false), 4000);
+    return () => {
+      if (overlayTimeout.current) clearTimeout(overlayTimeout.current);
+    };
+  }, [currentSideIndex]);
 
   // Initialize with existing photos - find the next side to capture
   useEffect(() => {
@@ -294,7 +298,6 @@ function CameraCapture({ onComplete, existingPhotos = [] }: CameraCaptureProps) 
 
   return (
     <div className="min-h-screen bg-black relative flex flex-col">
-      <ToastContainer toasts={toasts} onClose={removeToast} />
       <div className="relative flex-1 flex items-center justify-center overflow-hidden">
         <video
           ref={videoRef}
@@ -345,6 +348,21 @@ function CameraCapture({ onComplete, existingPhotos = [] }: CameraCaptureProps) 
 
         <canvas ref={canvasRef} className="hidden" />
       </div>
+
+      {showOverlay && (
+        <div className="fixed inset-0 z-40 bg-black/50 flex items-center justify-center">
+          <div className="bg-white rounded-xl shadow-xl p-4 flex flex-col items-center gap-4 max-w-xs border-2 border-blue-600">
+            <img
+              src={currentSide.isVertical ? carFrontImg : carSideImg}
+              alt={currentSide.isVertical ? 'Front/Rear Portrait Example' : 'Side Landscape Example'}
+              className="w-40 h-40 object-contain mb-2"
+            />
+            <div className="text-center font-semibold text-blue-800">
+              {currentSide.isVertical ? 'Capture the image in portrait mode' : 'Capture the image in landscape mode'}
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black via-black/80 to-transparent px-6 pt-4 pb-12 space-y-4">
         <div className="text-center">
